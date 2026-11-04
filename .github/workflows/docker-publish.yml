@@ -19,7 +19,7 @@ permissions:
   contents: read
 
 env:
-  IMAGE_NAME: ghcr.io/Apple1314/caution
+  IMAGE_NAME: ghcr.io/apple1314/caution
 
 jobs:
   # Run tests.
