@@ -428,3 +428,5 @@ cargo test -p biliup -p biliup-cli -p danmaku
 
 ## ⭐Stars
 [![Star History Chart](https://star-history.dera.page/svg?repos=biliup/biliup&type=Date)](https://star-history.dera.page/#biliup/biliup&Date)
+
+<!-- trigger docker build -->
