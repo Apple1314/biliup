@@ -708,16 +708,14 @@ fn build_cookie_header(user_cookie: &str, device_id: &str) -> String {
     parts.join("; ")
 }
 
-/// The official Web playback endpoints need the login cookies and their Web DID.
-/// Keep the full imported source separately for renewal and other request types.
+/// The official Web playback endpoints need the full browser cookie set.
+/// Douyu now validates several non-acf_ fields (m_uid / m_stk / dy_auth), so
+/// trimming the header down to acf_* + dy_did causes HTTP 403 on getEncryption.
 fn web_playback_cookie_header(cookie: &str) -> String {
     cookie
         .split(';')
         .map(str::trim)
-        .filter(|part| {
-            part.split_once('=')
-                .is_some_and(|(name, _)| name.starts_with("acf_") || name == "dy_did")
-        })
+        .filter(|part| !part.is_empty())
         .collect::<Vec<_>>()
         .join("; ")
 }
@@ -1393,15 +1391,18 @@ mod tests {
     }
 
     #[test]
-    fn web_playback_cookie_omits_unrelated_fields_and_preserves_encoded_login() {
+    fn web_playback_cookie_keeps_all_fields() {
         let header = web_playback_cookie_header(
             " huya_ua={\"source\":\"browser\"}; acf_auth=encoded%2F==; PHPSESSID=other; acf_uid=42; dy_did=device; LTP0=passport-only; _ga=tracking; acf_did=app-device ",
         );
         assert_eq!(
             header,
-            "acf_auth=encoded%2F==; acf_uid=42; dy_did=device; acf_did=app-device"
+            "huya_ua={\"source\":\"browser\"}; acf_auth=encoded%2F==; PHPSESSID=other; acf_uid=42; dy_did=device; LTP0=passport-only; _ga=tracking; acf_did=app-device"
         );
-        assert!(web_playback_cookie_header("PHPSESSID=other; _ga=tracking").is_empty());
+        assert_eq!(
+            web_playback_cookie_header("PHPSESSID=other; _ga=tracking"),
+            "PHPSESSID=other; _ga=tracking"
+        );
     }
 
     #[test]
